@@ -47,6 +47,8 @@ class PenyuTELEPORTER(BaseLogic):
                     if isEqualPosition(board_bot.position, kandidatSolusi[0].position):
                         return False
                 if kandidatSolusi[1]:
+                    if isEqualPosition(board_bot.position, kandidatSolusi[1].position):
+                        return False
                     if (kandidatSolusi[1].properties.points == 2 and board_bot.properties.diamonds >= 4):
                         return False
                     # return (board_bot.properties.diamonds + kandidatSolusi.properties.points <= 5)    
@@ -138,7 +140,9 @@ class PenyuTELEPORTER(BaseLogic):
 
         if (delta_x == delta_y):
             self.goal_position = None
-            delta_x, delta_y = self.next_move(board_bot, board)
+            delta_x, delta_y = 0, 1
+            print("ngapa nih")
+            # delta_x, delta_y = self.next_move(board_bot, board)
 
         return delta_x, delta_y
     
