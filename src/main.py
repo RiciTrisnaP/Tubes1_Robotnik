@@ -11,6 +11,7 @@ from game.logic.base import BaseLogic
 from game.logic.mybot import MyBot
 from game.logic.eksplor import Eksplor
 from game.logic.kejarbase import KejarBase
+from game.logic.PenyuTELEPORTER import PenyuTELEPORTER
 from game.logic.diero import Diero
 from game.logic.rici import Rici
 
@@ -18,7 +19,8 @@ init()
 BASE_URL = "http://localhost:3000/api"
 DEFAULT_BOARD_ID = 1
 CONTROLLERS = {
-    "Random": RandomLogic, "MyBot" : MyBot, "Eksplor" : Eksplor, "KejarBase" :KejarBase, "Diero" :Diero, "Rici" :Rici
+    "Random": RandomLogic, "MyBot" : MyBot, "Eksplor" : Eksplor, 
+    "KejarBase" :KejarBase, "Diero" :Diero, "Rici" :Rici, "penyuTeleporter" : PenyuTELEPORTER
 }
 
 ###############################################################################
@@ -208,7 +210,7 @@ while True:
 
     # Don't spam the board more than it allows!
     # sleep(move_delay * time_factor)
-    sleep(1)
+    sleep(0.1)
 
 
 ###############################################################################

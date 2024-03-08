@@ -6,6 +6,7 @@ from game.models import Board, GameObject, Position, Properties
 
 class PenyuTELEPORTER(BaseLogic):
     def __init__(self):
+        self.directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
         self.goal_position: Optional[Position] = None
         self.poin_lama: int = 0
     
@@ -62,9 +63,13 @@ class PenyuTELEPORTER(BaseLogic):
             
             teleporters = [t for t in board.game_objects if t.type == "TeleportGameObject"]
 
+            # list poin diamond  dengan jarak tanpa melalui teleporter
             poin = [rumus(n, False, teleporters) for n in diamonds]
+
+            # list teleporter terdekat dan poin diamond dengan jarak yang dihitung melalui teleporter
             poin_teleporter = [rumus(n, True, teleporters) for n in diamonds]
             
+            # jarak minimum diamond tanpa melalui teleporter
             min_nt = min(poin)
             index_min = poin.index(min_nt)
 
@@ -77,13 +82,15 @@ class PenyuTELEPORTER(BaseLogic):
                     index_min_tel = index
                 index += 1
             
+            # membandingkan jarak terdekat melalui teleporter dengan jarak terdekat tanpa melalui teleporter
             isTeleporter = False
             if (min_teleporter < min_nt): 
                 index_min = index_min_tel
-                isTeleporter = True
+                isTeleporter = True # apabila jarak terdekat melalui teleporter maka target teleporter terdekat
 
             kandidatSolusi = poin_teleporter[index_min][0] if isTeleporter else None, diamonds[index_min]
 
+            # mengecek kelayakan kandidat solusi
             while not layak(kandidatSolusi, board_bot):
                 if len(diamonds) - 1 == 0:
                     # Tidak ada diamond yang layak, balik ke base
@@ -120,7 +127,7 @@ class PenyuTELEPORTER(BaseLogic):
             self.goal_position = None
 
         if fungsiSolusi(stats):
-            # Kalo inventory penuh balik ke base
+            # apabila inventory penuh kembali ke base
             self.goal_position = stats.base
         elif stats.diamonds != 5 and self.goal_position == None:    
             solusi = seleksi(diamonds, board_bot, board)
@@ -139,9 +146,11 @@ class PenyuTELEPORTER(BaseLogic):
         )
 
         if (delta_x == delta_y):
-            self.goal_position = None
-            delta_x, delta_y = 0, 1
-            print("ngapa nih")
+            for i in self.directions:
+                if 0 <= current_position.x + i[0] <= 14 and 0 <= current_position.y + i[1] <= 14:
+                    delta_x = i[0]
+                    delta_y = i[1]
+                break
             # delta_x, delta_y = self.next_move(board_bot, board)
 
         return delta_x, delta_y
