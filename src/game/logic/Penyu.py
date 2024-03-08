@@ -19,15 +19,24 @@ class Penyu(BaseLogic):
         def isDiamondValid(diamonds):   
             # Mengembalikan true jika terdapat diamond pada posisi self.goal_position
             return (any(isEqualPosition(diamond.position, self.goal_position) for diamond in diamonds))
-        def Jarak(Pos1: Position, Pos2: Position) -> int:
-            # Mengembalikan jumlah gerakan yang diperlukan untuk bergerak dari Pos1 ke Pos2
-            return (abs(Pos1.y - Pos2.y) + abs(Pos1.x - Pos2.x))
         def isTeleporter(board_bot: GameObject, teleporters: List[GameObject]) -> bool:
             # Mengembalikan true jika terdapat teleporter pada posisi bot
             return (any(isEqualPosition(teleporter.position, board_bot.position) for teleporter in teleporters))
+        def Jarak(Pos1: Position, Pos2: Position) -> int:
+            # Mengembalikan jumlah gerakan yang diperlukan untuk bergerak dari Pos1 ke Pos2
+            return (abs(Pos1.y - Pos2.y) + abs(Pos1.x - Pos2.x))
+        def JarakTeleporter(board_bot: GameObject, teleporters: List[GameObject], diamond: GameObject):
+            nearest_teleporter = teleporters[0]
+            farthest_teleporter = teleporters[1]
+
+            current_position = board_bot.position
+            if Jarak(current_position, teleporters[1].position) < Jarak(current_position, teleporters[0].posititon):
+                nearest_teleporter = teleporters[1]
+                farthest_teleporter = teleporters[0]
+            return nearest_teleporter, Jarak(current_position, nearest_teleporter.position) + Jarak(diamond.position, farthest_teleporter)
         
         # FUNGSI SELEKSI
-        def seleksi(diamonds: List[GameObject], board_bot: GameObject) -> Optional[GameObject]:
+        def seleksi(diamonds: List[GameObject], board_bot: GameObject, board: Board) -> Optional[GameObject]:
             # Mengembalikan diamond atau none jika tidak terdapat diamond yang memenuhi fungsi kelayakan
 
             # FUNGSI KELAYAKAN
@@ -39,20 +48,40 @@ class Penyu(BaseLogic):
                     # return (board_bot.properties.diamonds + kandidatSolusi.properties.points <= 5)
                 return True
 
-            def rumus(n: GameObject) -> float:
-                return (n.properties.points / (Jarak(current_position, n.position)))
+            def rumus(n: GameObject, isTeleporter: bool, teleporters):
+                if (isTeleporter):
+                    nearest_teleporter, dist = JarakTeleporter(board_bot, teleporters, n)
+                    return (nearest_teleporter, (dist / n.properties.points))
+                return ((Jarak(current_position, n.position) / n.properties.points))
+            
+            teleporters = [t for t in board.game_objects if t.type == "TeleportGameObject"]
 
-            poin = [rumus(n) for n in diamonds]
-            index_max = poin.index(max(poin))
+            poin = [rumus(n, False, teleporters) for n in diamonds]
+            poin_teleporter = [rumus(n, True, teleporters) for n in diamonds]
 
-            kandidatSolusi = diamonds[index_max]
+            min = min(poin)
+            index_min = poin.index(min)
+
+            # cari min + index min dari poin_teleporter
+            index_min_tel, index = 0, 0
+            min_teleporter = poin_teleporter[0][1]
+            for i in min_teleporter:
+                if i[1] < min_teleporter:
+                    min_teleporter = i[1]
+                    index_min_tel = index
+                index += 1
+
+            if (min_teleporter < min): 
+                index_min = index_min_tel
+
+            kandidatSolusi = diamonds[index_min]
 
             while not layak(kandidatSolusi, board_bot):
                 if len(diamonds) - 1 == 0:
                     # Tidak ada diamond yang layak, balik ke base
                     kandidatSolusi = None
-                del diamonds[index_max]
-                kandidatSolusi = seleksi(diamonds, board_bot) 
+                del diamonds[index_min]
+                kandidatSolusi = seleksi(diamonds, board_bot, board) 
             return kandidatSolusi
         
         # FUNGSI OBYEKTIF
@@ -84,7 +113,7 @@ class Penyu(BaseLogic):
             # Kalo inventory penuh balik ke base
             self.goal_position = stats.base
         elif stats.diamonds != 5 and self.goal_position == None:    
-            solusi = seleksi(diamonds, board_bot)
+            solusi = seleksi(diamonds, board_bot, board)
             self.poin_lama = board_bot.properties.diamonds
             if solusi:
                 self.goal_position = solusi.position

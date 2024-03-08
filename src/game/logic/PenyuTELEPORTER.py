@@ -4,7 +4,7 @@ from ..util import get_direction
 from game.logic.base import BaseLogic
 from game.models import Board, GameObject, Position, Properties
 
-class PenyuTELEPORT(BaseLogic):
+class PenyuTELEPORTER(BaseLogic):
     def __init__(self):
         self.goal_position: Optional[Position] = None
         self.poin_lama: int = 0
@@ -63,8 +63,6 @@ class PenyuTELEPORT(BaseLogic):
             poin = [rumus(n, False, teleporters) for n in diamonds]
             poin_teleporter = [rumus(n, True, teleporters) for n in diamonds]
             
-            print(poin)
-            print(diamonds)
             min_nt = min(poin)
             index_min = poin.index(min_nt)
 
@@ -87,7 +85,7 @@ class PenyuTELEPORT(BaseLogic):
             while not layak(kandidatSolusi, board_bot):
                 if len(diamonds) - 1 == 0:
                     # Tidak ada diamond yang layak, balik ke base
-                    kandidatSolusi = None
+                    kandidatSolusi = None, None
                     break
                 del diamonds[index_min]
                 kandidatSolusi = seleksi(diamonds, board_bot, board) 
@@ -129,7 +127,7 @@ class PenyuTELEPORT(BaseLogic):
             if not solusi[1]:
                 self.goal_position = stats.base
             else:
-                self.goal_position = solusi[0].position if solusi[0] else solusi[1].position
+                self.goal_position = solusi[1].position if not solusi[0] else solusi[0].position
         
         delta_x, delta_y = get_direction(
             current_position.x,
