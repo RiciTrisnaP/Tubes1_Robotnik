@@ -34,7 +34,9 @@ class Penyu(BaseLogic):
             def layak(kandidatSolusi: Optional[GameObject], board_bot: GameObject) -> bool:
                 # Mengembalikan true jika diamond yang dipilih layak
                 if kandidatSolusi:
-                    return (board_bot.properties.diamonds + kandidatSolusi.properties.points <= 5)
+                    if (kandidatSolusi.properties.points == 2 and board_bot.properties.diamonds >= 4):
+                        return False
+                    # return (board_bot.properties.diamonds + kandidatSolusi.properties.points <= 5)
                 return True
 
             def rumus(n: GameObject) -> float:
@@ -51,7 +53,6 @@ class Penyu(BaseLogic):
                     kandidatSolusi = None
                 del diamonds[index_max]
                 kandidatSolusi = seleksi(diamonds, board_bot) 
-                self.poin_lama = board_bot.properties.diamonds
             return kandidatSolusi
         
         # FUNGSI OBYEKTIF
@@ -62,11 +63,11 @@ class Penyu(BaseLogic):
             # - Poin berubah
             # - Kena teleporter
             return (self.goal_position and isEqualPosition(self.goal_position, current_position)) or \
-                    not(isEqualPosition(self.goal_position, stats.base) or isDiamondValid(diamonds)) or \
+                    (not isEqualPosition(self.goal_position, stats.base) and not isDiamondValid(diamonds)) or \
                     (self.poin_lama != stats.diamonds) or (isTeleporter(board_bot, teleporters))
         
         # FUNGSI SOLUSI
-        def solusi(stats: Properties) -> bool:
+        def fungsiSolusi(stats: Properties) -> bool:
             return (stats.diamonds == 5)
 
         # ------------------------------------------------------------------------------------------------------- #
@@ -79,11 +80,12 @@ class Penyu(BaseLogic):
         if resetTarget(current_position, stats):
             self.goal_position = None
 
-        if solusi(stats):
+        if fungsiSolusi(stats):
             # Kalo inventory penuh balik ke base
             self.goal_position = stats.base
         elif stats.diamonds != 5 and self.goal_position == None:    
             solusi = seleksi(diamonds, board_bot)
+            self.poin_lama = board_bot.properties.diamonds
             if solusi:
                 self.goal_position = solusi.position
             else:
@@ -95,6 +97,7 @@ class Penyu(BaseLogic):
             self.goal_position.x,
             self.goal_position.y,
         )
+
         return delta_x, delta_y
     
 # Himpunan Kandidat : diamonds
