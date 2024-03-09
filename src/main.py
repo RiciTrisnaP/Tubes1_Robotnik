@@ -8,19 +8,14 @@ from game.bot_handler import BotHandler
 from game.logic.random import RandomLogic
 from game.util import *
 from game.logic.base import BaseLogic
-from game.logic.mybot import MyBot
-from game.logic.eksplor import Eksplor
-from game.logic.kejarbase import KejarBase
 from game.logic.Robotnik import Robotnik
-from game.logic.diero import Diero
-from game.logic.rici import Rici
+
 
 init()
 BASE_URL = "http://localhost:3000/api"
 DEFAULT_BOARD_ID = 1
 CONTROLLERS = {
-    "Random": RandomLogic, "MyBot" : MyBot, "Eksplor" : Eksplor, 
-    "KejarBase" :KejarBase, "Diero" :Diero, "Rici" :Rici, "Robotnik" : Robotnik
+    "Random": RandomLogic, "Robotnik": Robotnik
 }
 
 ###############################################################################
@@ -166,7 +161,7 @@ if not current_board_id:
 #
 ###############################################################################
 board = board_handler.get_board(current_board_id)
-move_delay = board.minimum_delay_between_moves /1000000
+move_delay = board.minimum_delay_between_moves / 1000
 
 ###############################################################################
 #
