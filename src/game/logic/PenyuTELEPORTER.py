@@ -27,7 +27,8 @@ class PenyuTELEPORTER(BaseLogic):
         def Jarak(Pos1: Position, Pos2: Position) -> int:
             # Mengembalikan jumlah gerakan yang diperlukan untuk bergerak dari Pos1 ke Pos2
             return (abs(Pos1.y - Pos2.y) + abs(Pos1.x - Pos2.x))
-        def JarakTeleporter(board_bot: GameObject, teleporters: List[GameObject], diamond: GameObject):
+        def JarakTeleporter(board_bot: GameObject, teleporters: List[GameObject], diamond: Optional[GameObject], base: Optional[Position]):
+
             nearest_teleporter = teleporters[0]
             farthest_teleporter = teleporters[1]
 
@@ -35,6 +36,8 @@ class PenyuTELEPORTER(BaseLogic):
             if Jarak(current_position, teleporters[1].position) < Jarak(current_position, teleporters[0].position):
                 nearest_teleporter = teleporters[1]
                 farthest_teleporter = teleporters[0]
+            if (base):
+                return nearest_teleporter, Jarak(current_position, nearest_teleporter.position) + Jarak(base, farthest_teleporter.position)
             return nearest_teleporter, Jarak(current_position, nearest_teleporter.position) + Jarak(diamond.position, farthest_teleporter.position)
         
         # FUNGSI SELEKSI
@@ -57,7 +60,7 @@ class PenyuTELEPORTER(BaseLogic):
 
             def rumus(n: GameObject, isTeleporter: bool, teleporters):
                 if (isTeleporter):
-                    nearest_teleporter, dist = JarakTeleporter(board_bot, teleporters, n)
+                    nearest_teleporter, dist = JarakTeleporter(board_bot, teleporters, n, None)
                     return (nearest_teleporter, (dist / n.properties.points))
                 return ((Jarak(current_position, n.position) / n.properties.points))
             
@@ -137,6 +140,15 @@ class PenyuTELEPORTER(BaseLogic):
                 self.goal_position = stats.base
             else:
                 self.goal_position = solusi[1].position if not solusi[0] else solusi[0].position
+
+        if(self.goal_position == stats.base):
+            nearest_teleporter, distTeleporter = JarakTeleporter(board_bot, teleporters, None, stats.base)
+            distNormal = Jarak(current_position, stats.base)
+            if( distTeleporter < distNormal):
+                self.goal_position = nearest_teleporter.position
+            else:
+                self.goal_position = stats.base
+
         
         delta_x, delta_y = get_direction(
             current_position.x,
